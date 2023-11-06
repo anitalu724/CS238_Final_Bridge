@@ -10,8 +10,6 @@
     * Diamond: 13-25 	(i/13 == 1)
     * Clubs: 0-12 		(i/13 == 0) 
 
-<<<<<<< HEAD
-=======
 
 ### Usage:
 * `-v` / `--verbose`: Change the verbosity, an integer must be added behind the command. (Default: 1)
@@ -38,4 +36,3 @@ python3 main.py [-d]
 ```
 python3 main.py -v 3 -i -d -r
 ```
->>>>>>> bd1ba295b84d8eefdd4d784a797baa2e5ec0efa1
