@@ -4,11 +4,9 @@
 
 ### Structure:
 * Card
-    value: 0-51
-    * Spades: 39-51   	(i/13 == 3)
-    * Heart: 26- 38 	(i/13 == 2)
-    * Diamond: 13-25 	(i/13 == 1)
-    * Clubs: 0-12 		(i/13 == 0) 
+    value: 0-11
+    * Diamond: 6-11 	(i//6 == 1)
+    * Clubs: 0-5 		(i//6 == 0) 
 
 
 ### Usage:
@@ -32,7 +30,17 @@ python3 main.py [-d]
 python3 main.py [-d]
 ```
 
-# Test
+# Generate state index files
 ```
-python3 main.py -v 3 -i -d -r
+cd src
+python generate_index.py
 ```
+
+# Run one simulation
+```
+cd ..
+python3 main.py -v 3 -i -d
+```
+
+# Run simulation with expert/random policy to collect data
+TODO
