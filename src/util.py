@@ -16,8 +16,8 @@ def dealing(players, verbosity = 1) -> bool:
         player.point = 0
         for card in each_hand[idx]:
             player.append_card(Card(card))
-        if verbosity >= 3:
-            print(player)
+        # if verbosity >= 3:
+        #     print(player)
 
     return checking(players)
 
