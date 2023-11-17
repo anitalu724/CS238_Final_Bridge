@@ -9,13 +9,13 @@ from tqdm import trange
 
 VERBOSITY = 1
 
-with open("src/state1_index.json", "r") as f:
+with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state1_index.json", "r") as f:
     state_index_dict1 = json.loads(f.read())
 
-with open("src/state2_index.json", "r") as f:
+with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state2_index.json", "r") as f:
     state_index_dict2 = json.loads(f.read())
 
-with open("src/state3_index.json", "r") as f:
+with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state3_index.json", "r") as f:
     state_index_dict3 = json.loads(f.read())
 
 def main():
@@ -121,8 +121,11 @@ def main():
                     winner = decide_winner(deck_card)
                     # print("Winner: Player" + str(winner+1))
 
-                    if winner == 1 or winner == 3:
+                    if winner == 1 and win == 1 or winner == 3 & win == 1:
                         r = 1
+                        win += 1
+                    elif winner == 1 or winner == 3:
+                        r = 0.5
                         win += 1
                     else:
                         r = 0
