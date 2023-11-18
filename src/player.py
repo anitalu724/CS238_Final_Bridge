@@ -65,14 +65,20 @@ class Player:
     def play_expert(self, deck_card):
         pass
 
-    def play_policy(self, state_index, Q):
+    def play_policy(self, state_index, Q, trump_suit: int):
         policy = Q[state_index]
         max_q = -1
         card_to_play = None
         for possible_card in self.hand:
-            if policy[possible_card.value] > max_q:
+
+            if possible_card.suit == trump_suit:
+                same_suit = 1
+            else:
+                same_suit = 0
+
+            if policy[possible_card.value] + same_suit * 100 > max_q:
                 card_to_play = possible_card
-                max_q = policy[possible_card.value]
+                max_q = policy[possible_card.value] + same_suit * 100
         
         self.remove_card(card_to_play)
         return card_to_play

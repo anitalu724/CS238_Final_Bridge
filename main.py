@@ -6,6 +6,7 @@ from src.util import dealing, find_state_index, decide_winner
 from src.player import Player
 import numpy as np
 from tqdm import trange
+import matplotlib.pyplot as plt
 
 VERBOSITY = 1
 
@@ -24,8 +25,8 @@ def main():
     parser.add_argument("-i", "--init", action="store_true")
     parser.add_argument("-d", "--dealing", action="store_true")
     parser.add_argument("-r", "--redealing", action="store_true")
-    parser.add_argument("-n", "--num_trials", type=int, default=1000)
-    parser.add_argument("-a", "--alpha", type=float, default=1)
+    parser.add_argument("-n", "--num_trials", type=int, default=300000)
+    parser.add_argument("-a", "--alpha", type=float, default=0.9)
     parser.add_argument("-g", "--gamma", type=float, default=0.95)
     parser.add_argument("-s", "--save_interval", type=int, default=1000)
     arg = parser.parse_args()
@@ -67,6 +68,9 @@ def main():
     collect_data = []
 
     Q = np.zeros((3472921, 12))
+
+    num_win = 0
+    result = []
     for trial in trange(trials):
 
         dealing(players, VERBOSITY)
@@ -113,22 +117,34 @@ def main():
                         state_index = state_index_dict3[str(state_tuple)] + 110880 + 3326400
 
                     # card = player.play(trump_suit)
-                    card = player.play_policy(state_index, Q)
+                    # card = player.play_policy(state_index, Q, trump_suit)
+                    card = player.play(trump_suit)
                     # print("Player 4 plays " + str(card))
                     action_index = card.value
                     deck_card.append(card.value)
 
                     winner = decide_winner(deck_card)
                     # print("Winner: Player" + str(winner+1))
+                    if round == 0:
+                        if winner == 1 or winner == 3:
+                            r = 1
+                            win += 1
+                        else:
+                            r = 0
+                    elif round == 1:
+                        if winner == 1 or winner == 3:
+                            r = 0.5 + 0.5 * win
+                            win += 1
+                        else:
+                            r = 0 
 
-                    if winner == 1 and win == 1 or winner == 3 & win == 1:
-                        r = 1
-                        win += 1
-                    elif winner == 1 or winner == 3:
-                        r = 0.5
-                        win += 1
-                    else:
-                        r = 0
+                    elif round == 2:
+                        if (winner == 1 and win >= 1) or (winner == 3 and win >= 1):
+                            r = 1
+                            win += 1
+                        else:
+                            r  = 0
+
 
                     if round != 0:
                         state = last_state_index
@@ -155,11 +171,19 @@ def main():
         reward = last_r
 
         collect_data.append((state, action, reward, next_state))
+        Q[state, action] += alpha * (reward + (gamma * np.max(Q[next_state])) - Q[state, action])
+
+        if win >= 2:
+            num_win += 1
 
         if trial % save == save - 1:
             np.save('Q_' + str(trial+1) + '.npy', Q)
+            result.append(num_win / save)
+            num_win = 0
 
     # print("s, a, r, sp: " + str(collect_data))
+    plt.plot(result)
+    plt.show()
             
 
 if __name__ == "__main__":
