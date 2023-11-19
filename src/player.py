@@ -76,9 +76,9 @@ class Player:
             else:
                 same_suit = 0
 
-            if policy[possible_card.value] + same_suit * 100 > max_q:
+            if policy[possible_card.value] + same_suit * 10000000000 > max_q:
                 card_to_play = possible_card
-                max_q = policy[possible_card.value] + same_suit * 100
+                max_q = policy[possible_card.value] + same_suit * 10000000000
         
         self.remove_card(card_to_play)
         return card_to_play

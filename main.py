@@ -25,10 +25,10 @@ def main():
     parser.add_argument("-i", "--init", action="store_true")
     parser.add_argument("-d", "--dealing", action="store_true")
     parser.add_argument("-r", "--redealing", action="store_true")
-    parser.add_argument("-n", "--num_trials", type=int, default=300000)
-    parser.add_argument("-a", "--alpha", type=float, default=0.9)
+    parser.add_argument("-n", "--num_trials", type=int, default=3000000)
+    parser.add_argument("-a", "--alpha", type=float, default=0.8)
     parser.add_argument("-g", "--gamma", type=float, default=0.95)
-    parser.add_argument("-s", "--save_interval", type=int, default=1000)
+    parser.add_argument("-s", "--save_interval", type=int, default=100)
     arg = parser.parse_args()
 
     if arg.verbose:
@@ -116,9 +116,9 @@ def main():
                     elif round == 2:
                         state_index = state_index_dict3[str(state_tuple)] + 110880 + 3326400
 
+                    # card = player.play(None)
                     # card = player.play(trump_suit)
-                    # card = player.play_policy(state_index, Q, trump_suit)
-                    card = player.play(trump_suit)
+                    card = player.play_policy(state_index, Q, trump_suit)
                     # print("Player 4 plays " + str(card))
                     action_index = card.value
                     deck_card.append(card.value)
@@ -127,7 +127,7 @@ def main():
                     # print("Winner: Player" + str(winner+1))
                     if round == 0:
                         if winner == 1 or winner == 3:
-                            r = 1
+                            r = 0.5
                             win += 1
                         else:
                             r = 0
@@ -137,13 +137,13 @@ def main():
                             win += 1
                         else:
                             r = 0 
-
+                    # giving a reward even for winning three rounds
                     elif round == 2:
                         if (winner == 1 and win >= 1) or (winner == 3 and win >= 1):
                             r = 1
                             win += 1
                         else:
-                            r  = 0
+                            r = 0
 
 
                     if round != 0:
@@ -177,9 +177,10 @@ def main():
             num_win += 1
 
         if trial % save == save - 1:
-            np.save('Q_' + str(trial+1) + '.npy', Q)
+            # np.save('Q_' + str(trial+1) + '.npy', Q)
             result.append(num_win / save)
             num_win = 0
+    np.save('Q_' + str(trials)  + '.npy', Q)
 
     # print("s, a, r, sp: " + str(collect_data))
     plt.plot(result)
