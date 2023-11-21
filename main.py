@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 
 VERBOSITY = 1
 
-with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state1_index.json", "r") as f:
+with open("./src/state1_index.json", "r") as f:
     state_index_dict1 = json.loads(f.read())
 
-with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state2_index.json", "r") as f:
+with open("./src/state2_index.json", "r") as f:
     state_index_dict2 = json.loads(f.read())
 
-with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state3_index.json", "r") as f:
+with open("./src/state3_index.json", "r") as f:
     state_index_dict3 = json.loads(f.read())
 
 def main():
@@ -25,7 +25,7 @@ def main():
     parser.add_argument("-i", "--init", action="store_true")
     parser.add_argument("-d", "--dealing", action="store_true")
     parser.add_argument("-r", "--redealing", action="store_true")
-    parser.add_argument("-n", "--num_trials", type=int, default=3000000)
+    parser.add_argument("-n", "--num_trials", type=int, default=30000)
     parser.add_argument("-a", "--alpha", type=float, default=0.8)
     parser.add_argument("-g", "--gamma", type=float, default=0.95)
     parser.add_argument("-s", "--save_interval", type=int, default=100)
@@ -118,7 +118,8 @@ def main():
 
                     # card = player.play(None)
                     # card = player.play(trump_suit)
-                    card = player.play_policy(state_index, Q, trump_suit)
+                    # card = player.play_policy(state_index, Q, trump_suit)
+                    card = player.play_expert(prev_card, deck_card)
                     # print("Player 4 plays " + str(card))
                     action_index = card.value
                     deck_card.append(card.value)
@@ -183,6 +184,7 @@ def main():
     np.save('Q_' + str(trials)  + '.npy', Q)
 
     # print("s, a, r, sp: " + str(collect_data))
+    print(sum(result)/len(result))
     plt.plot(result)
     plt.show()
             

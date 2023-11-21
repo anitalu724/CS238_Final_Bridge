@@ -1,4 +1,5 @@
 from .card import Card
+from .util import decide_winner
 import random
 
 class Player:
@@ -62,8 +63,57 @@ class Player:
                 self.remove_card(card)
                 return card
     
-    def play_expert(self, deck_card):
-        pass
+    def play_expert(self, prev_card, deck_card):
+        if len(self.hand) == 1:
+            card = self.hand[0]
+            self.remove_card(card)
+            return card
+        
+        all_card = prev_card + deck_card + [card.value for card in self.hand]
+        suit_0 = len([i for i in all_card if i // 6 == 0])
+        suit_1 = len(all_card) - suit_0
+        possible_suit = 0
+        if suit_0 > suit_1:
+            possible_suit = 1
+
+        possible_suit_card = [card for card in self.hand if card.suit == possible_suit]
+        not_possible_suit_card = [card for card in self.hand if card.suit != possible_suit]
+
+        cur_win = decide_winner(deck_card)
+        consider_card = None
+        if cur_win == 1:
+            if len(not_possible_suit_card) != 0:
+                consider_card = not_possible_suit_card
+            
+            else:
+                consider_card = possible_suit_card
+
+        else:
+            win_card = []
+            lose_card = []
+            for card in self.hand:
+                deck_card.append(card.value)
+                winner = decide_winner(deck_card)
+                deck_card.pop()
+                if winner == 3:
+                    win_card.append(card)
+                else:
+                    lose_card.append(card)
+
+            if len(win_card) != 0:
+                consider_card = win_card
+            
+            else:
+                consider_card = lose_card
+            
+        min_value = 100
+        for card in consider_card:
+            if card.value < min_value:
+                min_value = card.value
+                card_to_play = card
+
+        self.remove_card(card_to_play)
+        return card_to_play
 
     def play_policy(self, state_index, Q, trump_suit: int):
         policy = Q[state_index]
