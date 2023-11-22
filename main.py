@@ -3,20 +3,25 @@ import json
 from pathlib import Path
 from src.card import Card
 from src.util import dealing, find_state_index, decide_winner
+from src.genIdx import gen_idx
 from src.player import Player
 import numpy as np
 from tqdm import trange
 import matplotlib.pyplot as plt
+from os.path import exists
 
 VERBOSITY = 1
 
-with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state1_index.json", "r") as f:
+if not exists("json/state1_index.json") or not exists("json/state2_index.json") or not exists("json/state3_index.json"):
+    gen_idx()
+
+with open("json/state1_index.json", "r") as f:
     state_index_dict1 = json.loads(f.read())
 
-with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state2_index.json", "r") as f:
+with open("json/state2_index.json", "r") as f:
     state_index_dict2 = json.loads(f.read())
 
-with open("/Users/thomashuang/Documents/school/AA_228/CS238_Final_Bridge/src/state3_index.json", "r") as f:
+with open("json/state3_index.json", "r") as f:
     state_index_dict3 = json.loads(f.read())
 
 def main():
