@@ -15,14 +15,19 @@ VERBOSITY = 1
 if not exists("json/state1_index.json") or not exists("json/state2_index.json") or not exists("json/state3_index.json"):
     gen_idx()
 
-with open("json/state1_index.json", "r") as f:
-    state_index_dict1 = json.loads(f.read())
+state_idx_dict_list = []
+for i in range(1, 4):
+    with open("json/state"+str(i)+"_index.json", "r") as f:
+        state_idx_dict_list.append(json.loads(f.read()))
+    
+# with open("json/state1_index.json", "r") as f:
+#     state_index_dict1 = json.loads(f.read())
 
-with open("json/state2_index.json", "r") as f:
-    state_index_dict2 = json.loads(f.read())
+# with open("json/state2_index.json", "r") as f:
+#     state_index_dict2 = json.loads(f.read())
 
-with open("json/state3_index.json", "r") as f:
-    state_index_dict3 = json.loads(f.read())
+# with open("json/state3_index.json", "r") as f:
+#     state_index_dict3 = json.loads(f.read())
 
 def main():
     parser = argparse.ArgumentParser(description="Bridge Game")
@@ -33,7 +38,7 @@ def main():
     parser.add_argument("-n", "--num_trials", type=int, default=3000000)
     parser.add_argument("-a", "--alpha", type=float, default=0.8)
     parser.add_argument("-g", "--gamma", type=float, default=0.95)
-    parser.add_argument("-s", "--save_interval", type=int, default=100)
+    parser.add_argument("-s", "--save_interval", type=int, default=30000)
     arg = parser.parse_args()
 
     if arg.verbose:
@@ -115,11 +120,11 @@ def main():
                     state_tuple = find_state_index(prev_card, enemy1_card, teammate_card, enemy2_card, hand_card, win)
 
                     if round == 0:
-                        state_index = state_index_dict1[str(state_tuple)]
+                        state_index = state_idx_dict_list[0][str(state_tuple)]
                     elif round == 1:
-                        state_index = state_index_dict2[str(state_tuple)] + 110880
+                        state_index = state_idx_dict_list[1][str(state_tuple)] + 110880
                     elif round == 2:
-                        state_index = state_index_dict3[str(state_tuple)] + 110880 + 3326400
+                        state_index = state_idx_dict_list[2][str(state_tuple)] + 110880 + 3326400
 
                     # card = player.play(None)
                     # card = player.play(trump_suit)
