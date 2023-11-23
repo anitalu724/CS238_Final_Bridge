@@ -1,4 +1,5 @@
 import csv
+import copy
 import json
 import argparse
 import numpy as np
@@ -7,55 +8,46 @@ import matplotlib.pyplot as plt
 from tqdm import trange
 from pathlib import Path
 from src.card import Card
-
-from src.genIdx import check_json
+from numpy import genfromtxt
 from src.player import Player
+from numpy import linalg as la
+from src.genIdx import check_json
 from src.util import dealing, find_state_index, decide_winner
 
 VERBOSITY = 1
 
-# if not exists("json/state1_index.json") or not exists("json/state2_index.json") or not exists("json/state3_index.json"):
-#     gen_idx()
-check_json()
 
-state_idx_dict_list = []
-for i in range(1, 4):
-    with open("json/state"+str(i)+"_index.json", "r") as f:
-        state_idx_dict_list.append(json.loads(f.read()))
+
 
 def main():
     parser = argparse.ArgumentParser(description="Bridge Game")
     parser.add_argument("-v", "--verbose", action="store", type=int)
-    parser.add_argument("-i", "--init", action="store_true")
     parser.add_argument("-d", "--dealing", action="store_true")
     parser.add_argument("-r", "--redealing", action="store_true")
     parser.add_argument("-n", "--num_trials", type=int, default=4000000)
     parser.add_argument("-a", "--alpha", type=float, default = 0.8)
     parser.add_argument("-g", "--gamma", type=float, default = 0.95)
     parser.add_argument("-s", "--save_interval", type=int, default=40000)
+    parser.add_argument("-t", "--train", action="store_true")
     arg = parser.parse_args()
 
     if arg.verbose:
         VERBOSITY = arg.verbose
+    else:
+        VERBOSITY = 1
 
-    if arg.init:
-        players = [Player(i) for i in range(4)]
-        print("Start a 4-player bridge game")
+    ## Initial 4 players
+    players = [Player(i) for i in range(4)]
+    if VERBOSITY > 1: print("Start a 4-player bridge game")
 
-    # if arg.dealing:
-    #     print("Start dealing...")
+    ## Check and generate json files
+    check_json()
+    state_idx_dict_list = []
+    for i in range(1, 4):
+        with open("json/state"+str(i)+"_index.json", "r") as f:
+            state_idx_dict_list.append(json.loads(f.read()))
 
-    #     if arg.redealing:
-    #         allow = False
-    #         while not allow:
-    #             allow = dealing(players, VERBOSITY)
-    #             if not allow:
-    #                 print("\nRedealing...")
-    #     else:
-    #         dealing(players, VERBOSITY)
-
-    #     print("Finish dealing.")
-    
+    ## Set parameters
     trials = arg.num_trials
     alpha = arg.alpha
     gamma = arg.gamma
@@ -69,6 +61,7 @@ def main():
     # win = 0
     # r = 0
 
+
     collect_data = []
 
     Q = np.zeros((3472921, 12))
@@ -76,7 +69,6 @@ def main():
     num_win = 0
     result = []
     for trial in trange(trials):
-
         dealing(players, VERBOSITY)
         deck_card = []
         prev_card = []
@@ -188,9 +180,9 @@ def main():
             result.append(num_win / save)
             num_win = 0
 
-    # with open("data_only2win.csv", "w", newline="") as file:
-    #     writer = csv.write(file)
-    #     writer.writerows(collect_data)
+    with open("data_only2win.csv", "w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerows(collect_data)
 
     np.save('Q_' + str(trials)  + '.npy', Q)
 
@@ -202,10 +194,33 @@ def main():
     plt.plot(result)
     plt.ylim((0.25, 0.6))
     plt.show()
-
-
     ## Plot (x: time, y: range(0.25-0.6)) save fig
-            
+
+    ## Training
+    if arg.train:
+        epochs = 50
+        Q = np.zeros((3472921, 12))
+        # Q = np.load("./Q_trained.npy")
+        data = genfromtxt('./data_only2win.csv', delimiter=',')
+        state = data[:,0].astype(int)
+        action = data[:,1].astype(int)
+        reward = data[:,2]
+        next_state = data[:,3].astype(int)
+
+        for _ in trange(epochs):
+            q = copy.copy(Q)
+            for i in range(len(data)):
+                s = state[i]
+                a = action[i]
+                r = reward[i]
+                sp = next_state[i]
+                Q[s, a] += alpha * (r + (gamma * np.max(Q[sp])) - Q[s, a])
+            # if la.norm(Q-q) < 1e-5:
+            #     break
+        print(la.norm(Q-q))
+        # print(np.array_equal(Q,q))
+        np.save('Q_trained_only2win.npy', Q)
+
 
 if __name__ == "__main__":
     main()
