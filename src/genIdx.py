@@ -3,7 +3,7 @@ import itertools
 from os.path import exists
 
 def check_json():
-    if not exists("../json/state1_index.json") or not exists("../json/state2_index.json") or not exists("../json/state3_index.json"):
+    if not exists("json/state1_index.json") or not exists("json/state2_index.json") or not exists("json/state3_index.json"):
         gen_idx()
 
 def gen_idx() -> None:

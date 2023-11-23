@@ -40,34 +40,8 @@ def main():
     if arg.init:
         players = [Player(i) for i in range(4)]
         print("Start a 4-player bridge game")
-
-    # if arg.dealing:
-    #     print("Start dealing...")
-
-    #     if arg.redealing:
-    #         allow = False
-    #         while not allow:
-    #             allow = dealing(players, VERBOSITY)
-    #             if not allow:
-    #                 print("\nRedealing...")
-    #     else:
-    #         dealing(players, VERBOSITY)
-
-    #     print("Finish dealing.")
     
     trials = arg.num_trials
-    # alpha = arg.alpha
-    # gamma = arg.gamma
-    # save = arg.save_interval
-    # deck_card = []
-    # prev_card = []
-    # hand_card = []
-    # enemy1_card = None
-    # enemy2_card = None
-    # teammate_card = None
-    # win = 0
-    # r = 0
-
     collect_data = []
 
     # Q = np.zeros((3472921, 12))
@@ -76,7 +50,6 @@ def main():
     num_win = 0
     result = []
     for trial in trange(trials):
-
         dealing(players, VERBOSITY)
         deck_card = []
         prev_card = []
@@ -114,16 +87,14 @@ def main():
                     state_tuple = find_state_index(prev_card, enemy1_card, teammate_card, enemy2_card, hand_card, win)
 
                     if round == 0:
-                        state_index = state_index_dict1[str(state_tuple)]
+                        state_index = state_idx_dict_list[0][str(state_tuple)]
                     elif round == 1:
-                        state_index = state_index_dict2[str(state_tuple)] + 110880
+                        state_index = state_idx_dict_list[1][str(state_tuple)] + 110880
                     elif round == 2:
-                        state_index = state_index_dict3[str(state_tuple)] + 110880 + 3326400
+                        state_index = state_idx_dict_list[2][str(state_tuple)] + 110880 + 3326400
 
-                    # card = player.play(None)
-                    # card = player.play(trump_suit)
                     card = player.play_policy(state_index, Q, trump_suit)
-                    # print("Player 4 plays " + str(card))
+                    
                     action_index = card.value
                     deck_card.append(card.value)
 
