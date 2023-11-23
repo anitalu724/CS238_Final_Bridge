@@ -7,16 +7,15 @@ import matplotlib.pyplot as plt
 from tqdm import trange
 from pathlib import Path
 from src.card import Card
-
-from src.genIdx import check_json
+from os.path import exists
+from src.genIdx import gen_idx
 from src.player import Player
 from src.util import dealing, find_state_index, decide_winner
 
 VERBOSITY = 1
 
-# if not exists("json/state1_index.json") or not exists("json/state2_index.json") or not exists("json/state3_index.json"):
-#     gen_idx()
-check_json()
+if not exists("json/state1_index.json") or not exists("json/state2_index.json") or not exists("json/state3_index.json"):
+    gen_idx()
 
 state_idx_dict_list = []
 for i in range(1, 4):
@@ -29,10 +28,10 @@ def main():
     parser.add_argument("-i", "--init", action="store_true")
     parser.add_argument("-d", "--dealing", action="store_true")
     parser.add_argument("-r", "--redealing", action="store_true")
-    parser.add_argument("-n", "--num_trials", type=int, default=4000000)
-    parser.add_argument("-a", "--alpha", type=float, default = 0.8)
-    parser.add_argument("-g", "--gamma", type=float, default = 0.95)
-    parser.add_argument("-s", "--save_interval", type=int, default=40000)
+    parser.add_argument("-n", "--num_trials", type=int, default=30000)
+    parser.add_argument("-a", "--alpha", type=float, default=0.8)
+    parser.add_argument("-g", "--gamma", type=float, default=0.95)
+    parser.add_argument("-s", "--save_interval", type=int, default=1000)
     arg = parser.parse_args()
 
     if arg.verbose:
@@ -57,9 +56,9 @@ def main():
     #     print("Finish dealing.")
     
     trials = arg.num_trials
-    alpha = arg.alpha
-    gamma = arg.gamma
-    save = arg.save_interval
+    # alpha = arg.alpha
+    # gamma = arg.gamma
+    # save = arg.save_interval
     # deck_card = []
     # prev_card = []
     # hand_card = []
@@ -71,7 +70,8 @@ def main():
 
     collect_data = []
 
-    Q = np.zeros((3472921, 12))
+    # Q = np.zeros((3472921, 12))
+    Q = np.load("./Q_trained_noshaping.npy")
 
     num_win = 0
     result = []
@@ -99,14 +99,12 @@ def main():
                 
                 if i == 1:
                     card = player.play(trump_suit)
-                    # card = player.play(None)
                     deck_card.append(card.value)
                     teammate_card = card.value
                     # print("Player 2 plays " + str(card))
 
                 if i == 2:
                     card = player.play(trump_suit)
-                    # card = player.play(None)
                     deck_card.append(card.value)
                     enemy2_card = card.value
                     # print("Player 3 plays " + str(card))
@@ -116,95 +114,63 @@ def main():
                     state_tuple = find_state_index(prev_card, enemy1_card, teammate_card, enemy2_card, hand_card, win)
 
                     if round == 0:
-                        state_index = state_idx_dict_list[0][str(state_tuple)]
+                        state_index = state_index_dict1[str(state_tuple)]
                     elif round == 1:
-                        state_index = state_idx_dict_list[1][str(state_tuple)] + 110880
+                        state_index = state_index_dict2[str(state_tuple)] + 110880
                     elif round == 2:
-                        state_index = state_idx_dict_list[2][str(state_tuple)] + 110880 + 3326400
+                        state_index = state_index_dict3[str(state_tuple)] + 110880 + 3326400
 
                     # card = player.play(None)
                     # card = player.play(trump_suit)
-                    # card = player.play_policy(state_index, Q, trump_suit)
-                    card = player.play_expert(prev_card, deck_card)
+                    card = player.play_policy(state_index, Q, trump_suit)
                     # print("Player 4 plays " + str(card))
                     action_index = card.value
                     deck_card.append(card.value)
 
                     winner = decide_winner(deck_card)
-                    # print("Winner: Player" + str(winner+1))
-                    if round == 0:
-                        if winner == 1 or winner == 3:
-                            r = 0.5
-                            win += 1
-                        else:
-                            r = 0
-                    elif round == 1:
-                        if winner == 1 or winner == 3:
-                            r = 0.5 + 0.5 * win
-                            win += 1
-                        else:
-                            r = 0 
-                    # giving a reward even for winning three rounds
-                    elif round == 2:
-                        if (winner == 1 and win >= 1) or (winner == 3 and win >= 1):
-                            r = 1
-                            win += 1
-                        else:
-                            r = 0
-
-
+                        
+                    
+                    if winner == 1 or winner == 3:
+                        win += 1
+                        
                     if round != 0:
                         state = last_state_index
                         action = last_action_index
                         next_state = state_index
-                        reward = last_r
+                        # reward = last_r
 
-                        collect_data.append((state, action, reward, next_state))
-                        Q[state, action] += alpha * (reward + (gamma * np.max(Q[next_state])) - Q[state, action])
+                        # collect_data.append((state, action, reward, next_state))
+                        # Q[state, action] += alpha * (reward + (gamma * np.max(Q[next_state])) - Q[state, action])
 
                         last_state_index = state_index
                         last_action_index = action_index
-                        last_r = r
+                        # last_r = r
 
                     prev_card += deck_card
                     deck_card = []
                     last_state_index = state_index
                     last_action_index = action_index
-                    last_r = r
+                    # last_r = r
         
         state = last_state_index
         action = last_action_index
         next_state = 3472920
-        reward = last_r
+        # reward = last_r
 
-        collect_data.append((state, action, reward, next_state))
-        Q[state, action] += alpha * (reward + (gamma * np.max(Q[next_state])) - Q[state, action])
+        # collect_data.append((state, action, reward, next_state))
+        # Q[state, action] += alpha * (reward + (gamma * np.max(Q[next_state])) - Q[state, action])
 
         if win >= 2:
             num_win += 1
 
-        if trial % save == save - 1:
+        # if trial % save == save - 1:
             # np.save('Q_' + str(trial+1) + '.npy', Q)
-            result.append(num_win / save)
-            num_win = 0
-
-    # with open("data_only2win.csv", "w", newline="") as file:
-    #     writer = csv.write(file)
-    #     writer.writerows(collect_data)
-
-    np.save('Q_' + str(trials)  + '.npy', Q)
+    print(f'win rate: ', (num_win / (trials)))
+            # num_win = 0
 
     # print("s, a, r, sp: " + str(collect_data))
-    with open("expert.json", "w") as f:
-        f.write(json.dumps(result, indent=4))
-    
-    print(sum(result)/len(result))
-    plt.plot(result)
-    plt.ylim((0.25, 0.6))
-    plt.show()
-
-
-    ## Plot (x: time, y: range(0.25-0.6)) save fig
+    # plt.plot(result)
+    # plt.show()
             
 
 if __name__ == "__main__":
